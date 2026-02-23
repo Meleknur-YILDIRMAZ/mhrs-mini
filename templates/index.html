@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MHRS Mini</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; }
+    .wrap { max-width: 900px; margin: 0 auto; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    input, select, button { padding: 10px; margin: 6px 0; width: 100%; }
+    button { cursor: pointer; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    pre { background: #f6f6f6; padding: 12px; border-radius: 8px; overflow: auto; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>MHRS Mini</h1>
+  <p>Hasta ekle + randevu oluştur. (Jenkins CI/CD için örnek uygulama)</p>
+
+  <div class="row">
+    <div class="card">
+      <h2>Hasta Ekle</h2>
+      <input id="p_name" placeholder="Ad Soyad" />
+      <input id="p_tc" placeholder="TC" />
+      <button onclick="addPatient()">Hasta Ekle</button>
+    </div>
+
+    <div class="card">
+      <h2>Randevu Oluştur</h2>
+      <input id="a_tc" placeholder="Hasta TC" />
+      <input id="a_doctor" placeholder="Doktor (örn: Dr. Ali)" />
+      <input id="a_date" type="date" />
+      <input id="a_time" type="time" />
+      <button onclick="addAppt()">Randevu Ekle</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Liste</h2>
+    <button onclick="refresh()">Yenile</button>
+    <h3>Hastalar</h3>
+    <pre id="patients"></pre>
+    <h3>Randevular</h3>
+    <pre id="appts"></pre>
+  </div>
+</div>
+
+<script>
+async function addPatient() {
+  const name = document.getElementById("p_name").value;
+  const tc = document.getElementById("p_tc").value;
+
+  const res = await fetch("/api/patients", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({name, tc})
+  });
+  const data = await res.json();
+  alert(JSON.stringify(data, null, 2));
+  refresh();
+}
+
+async function addAppt() {
+  const patient_tc = document.getElementById("a_tc").value;
+  const doctor = document.getElementById("a_doctor").value;
+  const date = document.getElementById("a_date").value;
+  const time = document.getElementById("a_time").value;
+
+  const res = await fetch("/api/appointments", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({patient_tc, doctor, date, time})
+  });
+  const data = await res.json();
+  alert(JSON.stringify(data, null, 2));
+  refresh();
+}
+
+async function refresh() {
+  const p = await fetch("/api/patients").then(r => r.json());
+  const a = await fetch("/api/appointments").then(r => r.json());
+  document.getElementById("patients").textContent = JSON.stringify(p, null, 2);
+  document.getElementById("appts").textContent = JSON.stringify(a, null, 2);
+}
+
+refresh();
+</script>
+</body>
+</html>
